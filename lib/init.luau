@@ -1,11 +1,11 @@
-local RunService = game:GetService "RunService"
+local RunService = game:GetService 'RunService'
 local is_client = RunService:IsClient()
 
-local codec = require "@self/utils/codec"
-local event = require "@self/event"
-local func = require "@self/func"
-local remote_index = require "@self/remote_index"
-local state = require "@self/state"
+local codec = require '@self/utils/codec'
+local event = require '@self/event'
+local func = require '@self/func'
+local remote_index = require '@self/remote_index'
+local state = require '@self/state'
 
 export type state_type<T> = state.state_type<T>
 export type event_type<T...> = event.event_type<T...>
@@ -51,18 +51,14 @@ local function deterministic_iter(tabl: { [string]: any })
 
 		local key = keys[count]
 
-		if key == nil then
-			return nil
-		end
+		if key == nil then return nil end
 
 		return key, tabl[key]
 	end
 end
 
 local function ensure_instance(parent: Instance, class: string, name: string): Instance
-	if is_client then
-		return parent:WaitForChild(name)
-	end
+	if is_client then return parent:WaitForChild(name) end
 
 	local instance = Instance.new(class)
 
@@ -73,14 +69,14 @@ local function ensure_instance(parent: Instance, class: string, name: string): I
 end
 
 local function define_remotes<T>(remotes_def: T, root: Instance?): T
-	assert(type(remotes_def) == "table", "refine type")
+	assert(type(remotes_def) == 'table', 'refine type')
 
 	local remotes_table = remotes_def :: any
-	local parent: Instance = root or ensure_instance(script, "Folder", "rbx")
+	local parent: Instance = root or ensure_instance(script, 'Folder', 'rbx')
 
 	for name, desc in deterministic_iter(remotes_table) do
-		if type(desc.rbxclass) ~= "string" then
-			local folder = ensure_instance(parent, "Folder", name)
+		if type(desc.rbxclass) ~= 'string' then
+			local folder = ensure_instance(parent, 'Folder', name)
 
 			remotes_table[name] = define_remotes(desc, folder)
 
@@ -91,13 +87,9 @@ local function define_remotes<T>(remotes_def: T, root: Instance?): T
 
 		local rbx = ensure_instance(parent, desc.rbxclass, name)
 
-		if desc.single then
-			remote_index.ensure_single(parent)
-		end
+		if desc.single then remote_index.ensure_single(parent) end
 
-		if desc.codec then
-			remote_index.set_codec(rbx, desc.codec)
-		end
+		if desc.codec then remote_index.set_codec(rbx, desc.codec) end
 
 		remotes_table[name] = desc.wrap(rbx, desc)
 	end

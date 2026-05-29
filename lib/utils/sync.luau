@@ -1,6 +1,6 @@
-local codec = require "./codec"
-local diff_algo = require "./diff"
-local diff_codec = require "./diff_codec"
+local codec = require './codec'
+local diff_algo = require './diff'
+local diff_codec = require './diff_codec'
 
 export type packet = {
 	buf: buffer,
@@ -19,7 +19,7 @@ local function create(params: {
 	default: any,
 	send: (Player, packet) -> (),
 	pools: { [Player]: codec.pool },
-	}): syncer
+}): syncer
 	return {
 		default = params.default,
 		send = params.send,
@@ -40,9 +40,7 @@ local function step(syncer: syncer, player: Player?)
 	local function ensure_snapshot(current: any): any
 		local snapshot = snapshots_cache[current]
 
-		if snapshot then
-			return snapshot
-		end
+		if snapshot then return snapshot end
 
 		snapshot = diff_algo.snapshot(current)
 		snapshots_cache[current] = snapshot
@@ -53,16 +51,12 @@ local function step(syncer: syncer, player: Player?)
 	local function send_one(target_player: Player)
 		local current = syncer.targets[target_player]
 
-		if current == nil then
-			return
-		end
+		if current == nil then return end
 
 		local previous = syncer.snapshots[target_player] or syncer.default
 		local diff_node = diff_algo.from(previous, current)
 
-		if diff_algo.is_empty(diff_node) then
-			return
-		end
+		if diff_algo.is_empty(diff_node) then return end
 
 		local buf, unknowns = diff_codec.impl.encode(diff_node, syncer.pools[target_player])
 
@@ -83,9 +77,7 @@ local function step(syncer: syncer, player: Player?)
 	end
 
 	for target_player in syncer.snapshots do
-		if syncer.targets[target_player] == nil then
-			syncer.snapshots[target_player] = nil
-		end
+		if syncer.targets[target_player] == nil then syncer.snapshots[target_player] = nil end
 	end
 
 	diff_algo.reset_cache()
@@ -98,9 +90,7 @@ local function diff_to_patch(node)
 		children = {},
 	}
 
-	if not node then
-		return patch
-	end
+	if not node then return patch end
 
 	for key, value in node.changes do
 		patch.changed[key] = value

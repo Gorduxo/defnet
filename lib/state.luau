@@ -1,11 +1,11 @@
-local Players = game:GetService "Players"
-local RunService = game:GetService "RunService"
+local Players = game:GetService 'Players'
+local RunService = game:GetService 'RunService'
 
-local codec = require "./utils/codec"
-local diff = require "./utils/diff"
-local diff_codec = require "./utils/diff_codec"
-local remote_index = require "./remote_index"
-local sync = require "./utils/sync"
+local codec = require './utils/codec'
+local diff = require './utils/diff'
+local diff_codec = require './utils/diff_codec'
+local remote_index = require './remote_index'
+local sync = require './utils/sync'
 
 local is_client = RunService:IsClient()
 
@@ -31,7 +31,7 @@ export type state_type<T> = {
 
 export type remote_desc<T> = {
 	id: number,
-	rbxclass: "RemoteEvent",
+	rbxclass: 'RemoteEvent',
 	codec: codec.codec_impl<T>?,
 	wrap: (RemoteEvent, remote_desc<T>) -> state_type<T>,
 	single: true,
@@ -39,7 +39,7 @@ export type remote_desc<T> = {
 }
 
 local function wrap<T>(remote: RemoteEvent, desc: remote_desc<T>): state_type<T>
-	local changed_event = Instance.new("BindableEvent")
+	local changed_event = Instance.new 'BindableEvent'
 
 	local function changed(callback: () -> ()): RBXScriptConnection
 		return changed_event.Event:Connect(callback)
@@ -66,7 +66,7 @@ local function wrap<T>(remote: RemoteEvent, desc: remote_desc<T>): state_type<T>
 			changed_event:Fire(patch, value)
 		end)
 
-		return table.freeze({
+		return table.freeze {
 			client = table.freeze(client),
 
 			changed = changed,
@@ -75,7 +75,7 @@ local function wrap<T>(remote: RemoteEvent, desc: remote_desc<T>): state_type<T>
 			server = {} :: { [Player]: T },
 
 			codec = desc.codec,
-		}) :: any
+		} :: any
 	end
 
 	local function send(player: Player, packet)
@@ -96,7 +96,7 @@ local function wrap<T>(remote: RemoteEvent, desc: remote_desc<T>): state_type<T>
 	table.insert(registry, syncer)
 
 	return table.freeze {
-		client = table.freeze({
+		client = table.freeze {
 			value = if desc.default ~= nil then diff.snapshot(desc.default) else {} :: any,
 
 			get = function(): T
@@ -106,7 +106,7 @@ local function wrap<T>(remote: RemoteEvent, desc: remote_desc<T>): state_type<T>
 			changed = function(callback: (T, T?) -> ()): RBXScriptConnection
 				return changed_event.Event:Connect(callback)
 			end,
-		}),
+		},
 
 		changed = changed,
 		step = step,
@@ -119,7 +119,7 @@ end
 
 local function define<T>(default: T?): state_type<T>
 	return {
-		rbxclass = "RemoteEvent",
+		rbxclass = 'RemoteEvent',
 		wrap = wrap,
 		codec = diff_codec.impl,
 		default = default,
